@@ -432,12 +432,12 @@ const Dashboard = () => {
 
         {showModal && (
           <div
-            className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[1001] mt-[8rem] mb-8 ${
+            className={`fixed inset-0 bg-black bg-opacity-50 flex items-center px-[10px] md:px-0 justify-center z-[1001] mt-[8rem] mb-8 ${
               theme === 'dark' ? 'bg-gray-900/50' : 'bg-gray-200/50'
             }`}
           >
             <div
-              className={`p-6 rounded-lg shadow-lg max-w-3xl w-full max-h-[80vh] overflow-y-auto ${
+              className={`p-6 rounded-lg shadow-lg max-w-3xl p-[10px] md:p-0 w-full max-h-[80vh] overflow-y-auto ${
                 theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'
               }`}
             >
@@ -447,7 +447,7 @@ const Dashboard = () => {
               <div className="flex mb-4 space-x-4">
                 <button
                   onClick={() => setNotificationType('user')}
-                  className={`flex-1 p-2 rounded-lg ${
+                  className={`flex-1 p-2 rounded-lg text-[12px] md:text-4 ${
                     notificationType === 'user'
                       ? theme === 'dark'
                         ? 'bg-blue-600 text-white'
@@ -461,7 +461,7 @@ const Dashboard = () => {
                 </button>
                 <button
                   onClick={() => setNotificationType('course')}
-                  className={`flex-1 p-2 rounded-lg ${
+                  className={`flex-1 p-2 rounded-lg text-[12px] md:text-4 ${
                     notificationType === 'course'
                       ? theme === 'dark'
                         ? 'bg-blue-600 text-white'
