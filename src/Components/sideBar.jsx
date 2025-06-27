@@ -168,7 +168,7 @@ export default function Sidebar({ onLinkClick, setSidebarExpanded, setActiveSect
 
   return (
     <div
-      className={`fixed h-full transition-all duration-300 ease-in-out ${
+      className={`fixed h-full transition-all duration-300 ease-in-out z-[1000111] ${
         isSidebarOpen || isSidebarExpanded || sidebarBehavior === 'expanded' ? 'w-64 sm:w-72' : 'w-16 sm:w-20'
       } ${theme === 'dark' ? 'bg-gray-900 border-r border-white/10' : 'bg-white/70 backdrop-blur-xl border-r border-black/10'} flex flex-col shadow-2xl z-[3000] ${
         isSidebarOpen ? 'translate-x-0' : '-translate-x-full sm:translate-x-0'

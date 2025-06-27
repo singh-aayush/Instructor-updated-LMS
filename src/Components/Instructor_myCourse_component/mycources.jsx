@@ -129,7 +129,7 @@ export default function MyCourses() {
     <>
       <Navbar notifications={[]} profileInitial="JP" />
       <div className={`flex-1 h-full ${darkMode === 'dark' ? 'bg-gray-900 text-white' : 'bg-slate-100 text-gray-900'} pt-4`}>
-        <div className="p-6 h-full overflow-auto pt-6">
+        <div className="p-[10px] md:p-6 h-full overflow-auto pt-6">
           <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
             <div>
               <h2 className={`text-2xl font-bold ${darkMode === 'dark' ? 'text-white' : 'text-gray-900'}`}>Course Management</h2>
@@ -246,7 +246,7 @@ export default function MyCourses() {
                           />
                         )}
                       </div>
-                      <div className="p-6">
+                      <div className="p-[10px] md:p-6">
                         <div className="flex items-center justify-between mb-4">
                           <div className="flex items-center space-x-2">
                             <div className={`p-2 rounded-lg ${darkMode === 'dark' ? 'bg-blue-500/20' : 'bg-blue-100'}`}>
@@ -281,7 +281,7 @@ export default function MyCourses() {
                               e.stopPropagation();
                               handlePlay(course._id);
                             }}
-                            className={`flex-1 p-2 rounded-lg transition-all duration-300 ${darkMode === 'dark' ? 'bg-blue-500/20 hover:bg-blue-500/30 text-blue-400' : 'bg-blue-50 hover:bg-blue-100 text-blue-700'}`}
+                            className={`flex-1 p-2 rounded-lg text-normal md:text-medium transition-all duration-300 ${darkMode === 'dark' ? 'bg-blue-500/20 hover:bg-blue-500/30 text-blue-400' : 'bg-blue-50 hover:bg-blue-100 text-blue-700'}`}
                           >
                             <FontAwesomeIcon icon={faPlay} className="text-sm mr-2" />
                             Play

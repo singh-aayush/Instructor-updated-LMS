@@ -361,17 +361,17 @@ function Assignments() {
                           Student: {assessment.studentFullName}
                         </p>
                       </div>
-                      <div className="flex justify-between text-xs sm:text-sm">
-                        <div>
+                      <div className="flex justify-between text-xs my-[10px] sm:text-sm">
+                        <div className='flex flex-col gap-[10px]'>
                           <span className={`block ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Course: {assessment.courseTitle}</span>
                           <span className={`block ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Due: {assessment.dueDate}</span>
                         </div>
-                        <div>
+                        <div className='flex flex-col gap-[10px]'>
                           <span className={`block ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Submitted: {assessment.submissionDate}</span>
                           <span className={`block ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Score: {assessment.score ?? 'N/A'}</span>
                         </div>
                       </div>
-                      <div className="flex justify-center">
+                      <div className="flex justify-start my-[14px]">
                         <span
                           className={`text-xs font-medium px-2 py-0.5 rounded ${
                             assessment.status.toLowerCase() === 'submitted'
@@ -386,7 +386,7 @@ function Assignments() {
                           {assessment.status}
                         </span>
                       </div>
-                      <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+                      <div className="flex flex-row gap-1 sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
                         <button
                           onClick={() => viewSubmission(assessment)}
                           className={`flex-1 p-1.5 sm:p-2 rounded-md text-xs sm:text-sm font-medium transition-colors min-h-[44px] ${
