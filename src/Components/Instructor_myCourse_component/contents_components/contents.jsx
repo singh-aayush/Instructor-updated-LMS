@@ -500,7 +500,7 @@ const Contents = () => {
   return (
     <ErrorBoundary theme={theme}>
       <div
-        className={`min-h-screen px-3 py-4 sm:px-4 sm:py-6 md:px-6 md:py-8 ${
+        className={`min-h-screen px-3 py-8 sm:px-4 sm:py-6 md:px-6 md:py-8 ${
           theme === "dark" ? "bg-gray-900 text-white" : "bg-slate-100 text-black"
         }`}
       >
