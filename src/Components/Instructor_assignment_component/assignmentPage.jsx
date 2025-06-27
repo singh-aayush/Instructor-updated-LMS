@@ -3,7 +3,7 @@ import axios from 'axios';
 import Navbar from '../Navbar';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import SearchBar from './SearchBar';
+import SearchBar from './searchBar';
 import { ThemeContext } from '../../themeContext';
 
 const Notification = ({ message, type, onClose }) => {
