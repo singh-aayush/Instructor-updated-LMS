@@ -71,7 +71,7 @@ const Navbar = ({ notifications = [], profileInitial = 'A' }) => {
       <div className="mx-auto flex items-center justify-between">
         <div className="flex-1 min-w-0 pl-8">
           <h1
-            className={`text-[1.5rem] md:text-10 font-bold truncate ${
+            className={`!text-[1.5rem] md:text-10 font-bold truncate ${
               theme === 'dark' ? 'text-white' : 'text-gray-800'
             }`}
           >
