@@ -10,6 +10,7 @@ import Settings from "./Components/Instructor_settingPage_component/setting";
 import CreateCourse from "./Components/Instructor_createCourse_component/createCourse";
 import Login from "./Components/Login_component/login";
 import ProtectedRoute from "./Components/protectedRoute";
+import Analytics from "./Components/Instructor_analytics_component/analytics";
 import CoursePlayer from "./Components/Instructor_myCourse_component/CoursePlayer";
 import CourseEditor from './Components/Instructor_myCourse_component/contents_components/contents';
 import AssessmentsList from './Components/Instructor_myCourse_component/contents_components/Instructor_assignmentPage_component/allAssignment'; // Import AssessmentsList
@@ -43,6 +44,7 @@ function App() {
           {/* <Route path="Enroll-student" element={<EnrollStudent />}/> */}
           <Route path="assignments" element={<Assignment />} />
           <Route path="course-player/:courseId" element={<CoursePlayer />} />
+          <Route path="analytics" element={<Analytics />} />
           <Route path="settings" element={<Settings />} />
           <Route path="create-course" element={<CreateCourse />} />
           <Route

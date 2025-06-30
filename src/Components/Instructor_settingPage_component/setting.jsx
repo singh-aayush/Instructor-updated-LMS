@@ -520,7 +520,7 @@ const InstructorSettings = () => {
   </div>
   <div className="p-0">
     <ul>
-      {['profile', 'account', 'notifications', 'appearance', 'security'].map((tab) => (
+      {['profile', 'account', 'appearance'].map((tab) => (
         <li key={tab} className={`border-b ${theme === 'dark' ? 'border-white/10' : 'border-black/10'} last:border-b-0`}>
           <button
             onClick={() => setSettingsTab(tab)}
@@ -556,9 +556,9 @@ const InstructorSettings = () => {
                 />
               )}
               {settingsTab === 'account' && <AccountTab />}
-              {settingsTab === 'notifications' && <NotificationsTab />}
+              {/* {settingsTab === 'notifications' && <NotificationsTab />} */}
               {settingsTab === 'appearance' && <AppearanceTab />}
-              {settingsTab === 'security' && <SecurityTab />}
+              {/* {settingsTab === 'security' && <SecurityTab />} */}
             </div>
           </div>
         </div>

@@ -32,6 +32,10 @@ const Dashboard = () => {
   });
   const [sending, setSending] = useState(false);
   const [formError, setFormError] = useState(null);
+  const [averageCompletion, setAverageCompletion] = useState(0);
+  const [averageRating, setAverageRating] = useState(0);
+  const [totalCourseHours, setTotalCourseHours] = useState(0);
+  const [totalEarnings, setTotalEarnings] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -49,7 +53,7 @@ const Dashboard = () => {
 
         // Fetch courses
         setLoadingCourses(true);
-        const coursesResponse = await axios.get('https://new-lms-backend-vmgr.onrender.com/api/v1/instructors/courses');
+        const coursesResponse = await axios.get('https://lms-backend-flwq.onrender.com/api/v1/instructors/courses');
         const fetchedCourses = coursesResponse.data.data || [];
         const publishedCourses = fetchedCourses.filter(course => course.status === 'published').length;
         let courseInc = 0;
@@ -61,23 +65,37 @@ const Dashboard = () => {
         setActiveCourses(publishedCourses);
         setCourseIncrement(courseInc.toFixed(1));
         setCourses(fetchedCourses);
+
+        // Calculate average rating
+        const validRatings = fetchedCourses.filter(course => course.rating > 0);
+        const avgRating = validRatings.length > 0 
+          ? validRatings.reduce((sum, course) => sum + course.rating, 0) / validRatings.length 
+          : 0;
+        setAverageRating(avgRating.toFixed(2));
+
+        // Assume course duration is available or use placeholder
+        const totalHours = fetchedCourses.reduce((sum, course) => sum + (course.duration || 10), 0); // Placeholder: 10 hours per course
+        setTotalCourseHours(totalHours);
+
         setLoadingCourses(false);
 
-        // Fetch students
+        // Fetch students and progress
         setLoadingStudents(true);
         const allStudents = new Set();
         const studentDetails = [];
+        let totalProgress = 0;
+        let progressCount = 0;
 
         for (const course of fetchedCourses) {
           const courseId = course._id;
           const courseTitle = course.title;
           try {
             const studentsResponse = await axios.get(
-              `https://new-lms-backend-vmgr.onrender.com/api/v1/instructors/courses/${courseId}/students`
+              `https://lms-backend-flwq.onrender.com/api/v1/instructors/courses/${courseId}/students`
             );
             const courseStudents = studentsResponse.data.data || [];
 
-            courseStudents.forEach((enrollment) => {
+            for (const enrollment of courseStudents) {
               const student = enrollment.student;
               if (!allStudents.has(student._id)) {
                 allStudents.add(student._id);
@@ -89,8 +107,22 @@ const Dashboard = () => {
                   courseTitle,
                   enrollmentDate: new Date(enrollment.enrollmentDate).toLocaleString(),
                 });
+
+                // Fetch progress for each student in the course
+                try {
+                  const progressResponse = await axios.get(
+                    `https://lms-backend-flwq.onrender.com/api/v1/instructors/courses/${courseId}/students/${student._id}/progress`
+                  );
+                  const progressData = progressResponse.data.data;
+                  if (progressData && progressData.overallProgress) {
+                    totalProgress += progressData.overallProgress;
+                    progressCount++;
+                  }
+                } catch (error) {
+                  console.error(`Error fetching progress for student ${student._id} in course ${courseId}:`, error);
+                }
               }
-            });
+            }
           } catch (error) {
             console.error(`Error fetching students for course ${courseId}:`, error);
           }
@@ -107,7 +139,31 @@ const Dashboard = () => {
         setTotalStudents(newStudentCount);
         setStudentIncrement(studentInc.toFixed(1));
         setStudents(studentDetails.sort((a, b) => new Date(b.enrollmentDate) - new Date(a.enrollmentDate)));
+        setAverageCompletion(progressCount > 0 ? (totalProgress / progressCount).toFixed(1) : 0);
         setLoadingStudents(false);
+
+        // Fetch earnings
+        try {
+          const earningsResponse = await axios.get('https://lms-backend-flwq.onrender.com/api/v1/instructors/earnings');
+          let earnings = earningsResponse.data.data.totalEarnings;
+          
+          if (earnings === 0) {
+            earnings = fetchedCourses.reduce((sum, course) => {
+              const revenue = (course.price - (course.discountPrice || 0)) * (course.totalStudents || 0);
+              return sum + revenue;
+            }, 0);
+          }
+          
+          setTotalEarnings(earnings.toFixed(2));
+        } catch (error) {
+          console.error('Error fetching earnings:', error);
+          const calculatedEarnings = fetchedCourses.reduce((sum, course) => {
+            const revenue = (course.price - (course.discountPrice || 0)) * (course.totalStudents || 0);
+            return sum + revenue;
+          }, 0);
+          setTotalEarnings(calculatedEarnings.toFixed(2));
+        }
+
       } catch (error) {
         console.error('Error fetching data:', error, error.response, error.request);
         if (error.response && error.response.status === 401) {
@@ -196,7 +252,7 @@ const Dashboard = () => {
           ...(formData.actionUrl && { actionUrl: formData.actionUrl }),
         };
 
-        await axios.post('https://new-lms-backend-vmgr.onrender.com/api/v1/notifications', payload, {
+        await axios.post('https://lms-backend-flwq.onrender.com/api/v1/notifications', payload, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -217,7 +273,7 @@ const Dashboard = () => {
         };
 
         await axios.post(
-          `https://new-lms-backend-vmgr.onrender.com/api/v1/notifications/course/${formData.courseId}`,
+          `https://lms-backend-flwq.onrender.com/api/v1/notifications/course/${formData.courseId}`,
           payload,
           {
             headers: {
@@ -323,23 +379,31 @@ const Dashboard = () => {
                 : 'bg-gradient-to-br from-amber-50 to-orange-50 backdrop-blur-xl border border-amber-200'
             }`}
           >
-            <div className="flex items-center justify-between mb-3 sm:mb-4">
-              <div className={`p-2 sm:p-3 rounded-lg ${theme === 'dark' ? 'bg-amber-500/20' : 'bg-amber-200'}`}>
-                <FontAwesomeIcon icon={faTasks} className={`text-lg sm:text-xl ${theme === 'dark' ? 'text-amber-400' : 'text-amber-600'}`} />
+            {loadingCourses ? (
+              <div className="flex items-center justify-center h-24 sm:h-32">
+                <FontAwesomeIcon icon={faSpinner} className={`text-xl sm:text-2xl animate-spin ${theme === 'dark' ? 'text-amber-400' : 'text-amber-600'}`} />
               </div>
-              <div
-                className={`text-xs px-2 py-1 rounded-lg ${theme === 'dark' ? 'bg-red-500/20 text-red-400' : 'bg-red-200 text-red-600'}`}
-              >
-                -5
-              </div>
-            </div>
-            <h3 className={`text-xs sm:text-sm font-medium mb-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Pending Reviews</h3>
-            <p className={`text-2xl sm:text-3xl font-bold ${theme === 'dark' ? 'text-amber-400' : 'text-gray-800'}`}>6</p>
-            <div
-              className={`absolute inset-0 opacity-0 group-hover:opacity-20 transition-all duration-200 ${
-                theme === 'dark' ? 'bg-amber-400/20' : 'bg-amber-600/20'
-              }`}
-            ></div>
+            ) : (
+              <>
+                <div className="flex items-center justify-between mb-3 sm:mb-4">
+                  <div className={`p-2 sm:p-3 rounded-lg ${theme === 'dark' ? 'bg-amber-500/20' : 'bg-amber-200'}`}>
+                    <FontAwesomeIcon icon={faTasks} className={`text-lg sm:text-xl ${theme === 'dark' ? 'text-amber-400' : 'text-amber-600'}`} />
+                  </div>
+                  <div
+                    className={`text-xs px-2 py-1 rounded-lg ${theme === 'dark' ? 'bg-green-500/20 text-green-400' : 'bg-green-200 text-green-600'}`}
+                  >
+                    {averageRating > 0 ? `+${averageRating}` : '0'}
+                  </div>
+                </div>
+                <h3 className={`text-xs sm:text-sm font-medium mb-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Average Rating</h3>
+                <p className={`text-2xl sm:text-3xl font-bold ${theme === 'dark' ? 'text-amber-400' : 'text-gray-800'}`}>{averageRating}</p>
+                <div
+                  className={`absolute inset-0 opacity-0 group-hover:opacity-20 transition-all duration-200 ${
+                    theme === 'dark' ? 'bg-amber-400/20' : 'bg-amber-600/20'
+                  }`}
+                ></div>
+              </>
+            )}
           </div>
 
           <div
@@ -349,23 +413,31 @@ const Dashboard = () => {
                 : 'bg-gradient-to-br from-purple-50 to-pink-50 backdrop-blur-xl border border-purple-200'
             }`}
           >
-            <div className="flex items-center justify-between mb-3 sm:mb-4">
-              <div className={`p-2 sm:p-3 rounded-lg ${theme === 'dark' ? 'bg-purple-500/20' : 'bg-purple-200'}`}>
-                <FontAwesomeIcon icon={faChartLine} className={`text-lg sm:text-xl ${theme === 'dark' ? 'text-purple-400' : 'text-purple-600'}`} />
+            {loadingStudents ? (
+              <div className="flex items-center justify-center h-24 sm:h-32">
+                <FontAwesomeIcon icon={faSpinner} className={`text-xl sm:text-2xl animate-spin ${theme === 'dark' ? 'text-purple-400' : 'text-purple-600'}`} />
               </div>
-              <div
-                className={`text-xs px-2 py-1 rounded-lg ${theme === 'dark' ? 'bg-green-500/20 text-green-400' : 'bg-green-200 text-green-600'}`}
-              >
-                +8%
-              </div>
-            </div>
-            <h3 className={`text-xs sm:text-sm font-medium mb-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Completion Rate</h3>
-            <p className={`text-2xl sm:text-3xl font-bold ${theme === 'dark' ? 'text-purple-400' : 'text-gray-800'}`}>87%</p>
-            <div
-              className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-200 ${
-                theme === 'dark' ? 'bg-purple-400/20' : 'bg-purple-600/20'
-              }`}
-            ></div>
+            ) : (
+              <>
+                <div className="flex items-center justify-between mb-3 sm:mb-4">
+                  <div className={`p-2 sm:p-3 rounded-lg ${theme === 'dark' ? 'bg-purple-500/20' : 'bg-purple-200'}`}>
+                    <FontAwesomeIcon icon={faChartLine} className={`text-lg sm:text-xl ${theme === 'dark' ? 'text-purple-400' : 'text-purple-600'}`} />
+                  </div>
+                  <div
+                    className={`text-xs px-2 py-1 rounded-lg ${theme === 'dark' ? 'bg-green-500/20 text-green-400' : 'bg-green-200 text-green-600'}`}
+                  >
+                    {averageCompletion > 0 ? `+${averageCompletion}%` : '0%'}
+                  </div>
+                </div>
+                <h3 className={`text-xs sm:text-sm font-medium mb-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Completion Rate</h3>
+                <p className={`text-2xl sm:text-3xl font-bold ${theme === 'dark' ? 'text-purple-400' : 'text-gray-800'}`}>{averageCompletion}%</p>
+                <div
+                  className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-200 ${
+                    theme === 'dark' ? 'bg-purple-400/20' : 'bg-purple-600/20'
+                  }`}
+                ></div>
+              </>
+            )}
           </div>
         </div>
 
@@ -447,7 +519,7 @@ const Dashboard = () => {
               <div className="flex mb-4 space-x-4">
                 <button
                   onClick={() => setNotificationType('user')}
-                  className={`flex-1 p-2 rounded-lg text-[12px] md:text-4 ${
+                  className={`flex-1 p-2 rounded-lg text-[12px] md:text-base ${
                     notificationType === 'user'
                       ? theme === 'dark'
                         ? 'bg-blue-600 text-white'
@@ -461,7 +533,7 @@ const Dashboard = () => {
                 </button>
                 <button
                   onClick={() => setNotificationType('course')}
-                  className={`flex-1 p-2 rounded-lg text-[12px] md:text-4 ${
+                  className={`flex-1 p-2 rounded-lg text-[12px] md:text-base ${
                     notificationType === 'course'
                       ? theme === 'dark'
                         ? 'bg-blue-600 text-white'
@@ -479,7 +551,7 @@ const Dashboard = () => {
                   {formError}
                 </div>
               )}
-              <form onSubmit={handleSendNotification} className="space-y-4">
+              <div className="space-y-4">
                 {notificationType === 'user' ? (
                   <>
                     <div>
@@ -716,6 +788,7 @@ const Dashboard = () => {
                   <button
                     type="submit"
                     disabled={sending}
+                    onClick={handleSendNotification}
                     className={`p-2 rounded-lg ${
                       theme === 'dark'
                         ? sending
@@ -729,7 +802,7 @@ const Dashboard = () => {
                     {sending ? <FontAwesomeIcon icon={faSpinner} className="animate-spin" /> : 'Send'}
                   </button>
                 </div>
-              </form>
+              </div>
             </div>
           </div>
         )}
@@ -776,23 +849,23 @@ const Dashboard = () => {
             <h3 className={`text-base sm:text-lg font-semibold mb-4 ${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'}`}>Performance Overview</h3>
             <div className="space-y-3 sm:space-y-4">
               <div className="flex items-center justify-between">
-                <span className={`text-xs sm:text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Monthly Revenue</span>
-                <span className={`font-bold text-sm sm:text-base ${theme === 'dark' ? 'text-green-400' : 'text-green-600'}`}>₹89,750</span>
+                <span className={`text-xs sm:text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Total Revenue</span>
+                <span className={`font-bold text-sm sm:text-base ${theme === 'dark' ? 'text-green-400' : 'text-green-600'}`}>₹{totalEarnings}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className={`text-xs sm:text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>New Enrollments</span>
-                <span className={`font-bold text-sm sm:text-base ${theme === 'dark' ? 'text-blue-400' : 'text-blue-600'}`}>156</span>
+                <span className={`text-xs sm:text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Total Enrollments</span>
+                <span className={`font-bold text-sm sm:text-base ${theme === 'dark' ? 'text-blue-400' : 'text-blue-600'}`}>{totalStudents}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className={`text-xs sm:text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Average Rating</span>
                 <span className={`font-bold flex items-center space-x-1 text-sm sm:text-base ${theme === 'dark' ? 'text-yellow-400' : 'text-yellow-600'}`}>
-                  <span>4.75</span>
+                  <span>{averageRating}</span>
                   <span>⭐</span>
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className={`text-xs sm:text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Total Course Hours</span>
-                <span className={`font-bold text-sm sm:text-base ${theme === 'dark' ? 'text-purple-400' : 'text-purple-600'}`}>126h</span>
+                <span className={`font-bold text-sm sm:text-base ${theme === 'dark' ? 'text-purple-400' : 'text-purple-600'}`}>{totalCourseHours}h</span>
               </div>
             </div>
           </div>
