@@ -120,44 +120,27 @@ const Analytics = () => {
         if (!token) throw new Error('No authentication token found');
         setCertificateData([]);
         const progressPromises = coursesData.map(async (course) => {
-          const studentsResponse = await axios.get(
-            `https://lms-backend-flwq.onrender.com/api/v1/instructors/courses/${course._id}/students`,
+          const response = await axios.get(
+            `https://new-lms-backend-vmgr.onrender.com/api/v1/progress/course/${course._id}`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
-          if (!studentsResponse.data.success) {
-            throw new Error(`Failed to fetch students for course ${course._id}`);
+          if (!response.data.success) {
+            throw new Error(`Failed to fetch progress for course ${course._id}`);
           }
-          const studentIds = studentsResponse.data.data.map((student) => student.student._id);
-          const progressDataForCourse = {};
-          const completedStudents = [];
-          for (const studentId of studentIds) {
-            try {
-              const progressResponse = await axios.get(
-                `https://lms-backend-flwq.onrender.com/api/v1/instructors/courses/${course._id}/students/${studentId}/progress`,
-                { headers: { Authorization: `Bearer ${token}` } }
-              );
-              if (progressResponse.data.success) {
-                const progress = progressResponse.data.data.overallProgress;
-                progressDataForCourse[studentId] = progress;
-                if (typeof progress === 'number' && progress === 100) {
-                  completedStudents.push({
-                    studentId,
-                    courseId: course._id,
-                    enrollmentId: progressResponse.data.data.enrollment,
-                    studentName: studentsResponse.data.data.find((s) => s.student._id === studentId).student.name,
-                    courseTitle: course.title,
-                  });
-                }
-              }
-            } catch (err) {
-              console.error(`Failed to fetch progress for student ${studentId} in course ${course._id}:`, err);
-            }
-          }
-          return { courseId: course._id, progress: progressDataForCourse, completedStudents };
+          const completedStudents = response.data.data
+            .filter((progress) => progress.overallProgress === 100)
+            .map((progress) => ({
+              studentId: progress.student._id,
+              studentName: `${progress.student.firstName} ${progress.student.lastName}`,
+              courseId: course._id,
+              courseTitle: course.title,
+              enrollmentId: progress._id,
+            }));
+          return { courseId: course._id, completedStudents };
         });
         const progressResults = await Promise.all(progressPromises);
-        const progressMap = progressResults.reduce((acc, { courseId, progress }) => {
-          acc[courseId] = progress;
+        const progressMap = progressResults.reduce((acc, { courseId }) => {
+          acc[courseId] = progressData[courseId] || {};
           return acc;
         }, {});
         const allCompletedStudents = progressResults.flatMap((result) => result.completedStudents);
@@ -179,7 +162,7 @@ const Analytics = () => {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('No authentication token found');
       const response = await axios.post(
-        'https://lms-backend-flwq.onrender.com/api/v1/certificates',
+        'https://new-lms-backend-vmgr.onrender.com/api/v1/certificates',
         {
           studentId: certificate.studentId,
           courseId: certificate.courseId,
@@ -189,7 +172,7 @@ const Analytics = () => {
       );
       if (response.data.success) {
         setCertificateData((prev) => prev.filter((c) => c.enrollmentId !== certificate.enrollmentId));
-        addNotification(`Certificate approved for ${certificate.studentName} (ID: ${certificate.studentId})`, 'success');
+        addNotification(`Certificate approved for ${certificate.studentName}`, 'success');
       } else {
         throw new Error('Failed to issue certificate');
       }
@@ -206,12 +189,16 @@ const Analytics = () => {
 
   const calculateAverageRating = () => {
     if (!coursesData || coursesData.length === 0) return { rating: 0, satisfaction: 0 };
+  
     const totalRating = coursesData.reduce((sum, course) => sum + course.rating, 0);
     const ratedCourses = coursesData.filter((course) => course.rating > 0).length;
+  
     const averageRating = ratedCourses > 0 ? (totalRating / ratedCourses).toFixed(1) : 0;
     const satisfaction = ratedCourses > 0 ? ((totalRating / ratedCourses / 5) * 100).toFixed(0) : 0;
+  
     return { rating: averageRating, satisfaction };
   };
+  
 
   const calculateCompletionRate = (courseId) => {
     if (!progressData[courseId]) return 0;
@@ -244,7 +231,7 @@ const Analytics = () => {
   };
 
   const exportAnalyticsData = (format) => {
-    addNotificationnt(`Analytics exported as ${format.toUpperCase()}`, 'success');
+    addNotification(`Analytics exported as ${format.toUpperCase()}`, 'success');
     console.log(`Exporting data as ${format} for ${analyticsTimePeriod} days`);
   };
 
@@ -256,24 +243,20 @@ const Analytics = () => {
     return `${days} days`;
   };
 
-  // Prepare data for the revenue trends bar chart
   const getRevenueChartData = () => {
     if (!coursesData) return { labels: [], datasets: [] };
-
-    // Generate labels and revenue data for each course
     const labels = coursesData.map(course => course.title);
     const revenueData = coursesData.map(course => parseFloat(calculateCourseRevenue(course)));
-
     return {
       labels,
       datasets: [
         {
           label: 'Course Revenue (₹)',
           data: revenueData,
-          backgroundColor: darkMode ? '#10B981' : '#2563EB', // Emerald-500 for dark, Blue-600 for light
+          backgroundColor: darkMode ? '#10B981' : '#2563EB',
           borderColor: darkMode ? '#10B981' : '#2563EB',
           borderWidth: 1,
-          hoverBackgroundColor: darkMode ? '#34D399' : '#3B82F6', // Lighter shades for hover
+          hoverBackgroundColor: darkMode ? '#34D399' : '#3B82F6',
           hoverBorderColor: darkMode ? '#34D399' : '#3B82F6',
         },
       ],
@@ -287,14 +270,14 @@ const Analytics = () => {
       legend: {
         position: 'top',
         labels: {
-          color: darkMode ? '#D1D5DB' : '#374151', // Gray-300 for dark, Gray-700 for light
+          color: darkMode ? '#D1D5DB' : '#374151',
           font: {
             size: 12,
           },
         },
       },
       tooltip: {
-        backgroundColor: darkMode ? '#1F2937' : '#FFFFFF', // Gray-800 for dark, White for light
+        backgroundColor: darkMode ? '#1F2937' : '#FFFFFF',
         titleColor: darkMode ? '#FFFFFF' : '#1F2937',
         bodyColor: darkMode ? '#D1D5DB' : '#374151',
         borderColor: darkMode ? '#4B5563' : '#D1D5DB',
@@ -310,7 +293,7 @@ const Analytics = () => {
           display: false,
         },
         ticks: {
-          color: darkMode ? '#9CA3AF' : '#6B7280', // Gray-400 for dark, Gray-500 for light
+          color: darkMode ? '#9CA3AF' : '#6B7280',
           maxRotation: 45,
           minRotation: 45,
           autoSkip: false,
@@ -323,7 +306,7 @@ const Analytics = () => {
         ticks: {
           color: darkMode ? '#9CA3AF' : '#6B7280',
           callback: (value) => `₹${value.toLocaleString()}`,
-          stepSize: 5000, // Set y-axis tick interval to ₹5000
+          stepSize: 5000,
         },
         beginAtZero: true,
       },
@@ -360,7 +343,7 @@ const Analytics = () => {
         }`}
       >
         <div
-          className={`rounded-2xl p-4 xs:p-6 w-full max-w-[90%] xs:max-w-lg ${
+          className={`rounded-2xl p-4 xs:p-6 w-full max-w-[50%] xs:max-w-lg ${
             darkMode ? 'bg-gray-800' : 'bg-white'
           } shadow-xl overflow-y-auto max-h-[80vh]`}
         >
@@ -375,7 +358,7 @@ const Analytics = () => {
                   className={`p-3 xs:p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}
                 >
                   <p className="text-xs xs:text-sm">
-                    <strong>Student:</strong> {cert.studentName} (ID: {cert.studentId})
+                    <strong>Student:</strong> {cert.studentName}
                   </p>
                   <p className="text-xs xs:text-sm">
                     <strong>Course:</strong> {cert.courseTitle}
@@ -460,35 +443,8 @@ const Analytics = () => {
             <option className={`${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`} value="90">Last 3 months</option>
             <option className={`${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`} value="365">Last year</option>
           </select>
-          <div className="flex gap-1 xs:gap-2">
-            <button
-              onClick={() => exportAnalyticsData('csv')}
-              className={`px-3 xs:px-4 py-2 xs:py-3 rounded-xl font-medium text-xs xs:text-sm transition-all duration-300 hover:scale-105 ${
-                darkMode
-                  ? 'bg-gradient-to-r from-gray-800 to-black hover:from-gray-700 hover:to-gray-900 text-white shadow-lg shadow-gray-800/25'
-                  : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg shadow-green-500/25'
-              }`}
-              title="Export as CSV"
-            >
-              <FontAwesomeIcon icon={faFileCsv} className="mr-1 xs:mr-2" />
-              CSV
-            </button>
-            <button
-              onClick={() => exportAnalyticsData('json')}
-              className={`px-3 xs:px-4 py-2 xs:py-3 rounded-xl font-medium text-xs xs:text-sm transition-all duration-300 hover:scale-105 ${
-                darkMode
-                  ? 'bg-gradient-to-r from-gray-800 to-black hover:from-gray-700 hover:to-gray-900 text-white shadow-lg shadow-gray-800/25'
-                  : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg shadow-blue-500/25'
-              }`}
-              title="Export as JSON"
-            >
-              <FontAwesomeIcon icon={faFileCode} className="mr-1 xs:mr-2" />
-              JSON
-            </button>
-          </div>
         </div>
       </div>
-
       <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 xs:gap-6">
         <div
           className={`group relative overflow-hidden rounded-2xl p-4 xs:p-6 transition-all duration-300 hover:scale-105 cursor-pointer ${
@@ -550,7 +506,6 @@ const Analytics = () => {
             </>
           )}
         </div>
-
         <div
           className={`group relative overflow-hidden rounded-2xl p-4 xs:p-6 transition-all duration-300 hover:scale-105 ${
             darkMode
@@ -617,7 +572,6 @@ const Analytics = () => {
             </>
           )}
         </div>
-
         <div
           className={`group relative overflow-hidden rounded-2xl p-4 xs:p-6 transition-all duration-300 hover:scale-105 ${
             darkMode
@@ -685,7 +639,6 @@ const Analytics = () => {
           )}
         </div>
       </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 xs:gap-6">
         <div
           className={`rounded-2xl p-4 xs:p-6 ${
@@ -719,7 +672,6 @@ const Analytics = () => {
             )}
           </div>
         </div>
-
         <div
           className={`rounded-2xl p-4 xs:p-6 ${
             darkMode
@@ -767,7 +719,6 @@ const Analytics = () => {
                 }}
               ></div>
             </div>
-
             <div className="flex items-center justify-between">
               <span
                 className={`text-xs xs:text-sm ${
@@ -803,7 +754,6 @@ const Analytics = () => {
           </div>
         </div>
       </div>
-
       <div
         className={`rounded-2xl p-4 xs:p-6 ${
           darkMode
