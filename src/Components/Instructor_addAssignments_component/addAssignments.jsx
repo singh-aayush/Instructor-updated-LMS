@@ -66,7 +66,7 @@ function AddAssignments({ courseId }) {
         }
 
         const response = await axios.get(
-          `https://lms-backend-flwq.onrender.com/api/v1/courses/${courseId}`,
+          `https://new-lms-backend-vmgr.onrender.com/api/v1/courses/${courseId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -162,7 +162,7 @@ function AddAssignments({ courseId }) {
       }
 
       await axios.post(
-        `https://lms-backend-flwq.onrender.com/api/v1/instructors/courses/${courseId}/assessments`,
+        `https://new-lms-backend-vmgr.onrender.com/api/v1/instructors/courses/${courseId}/assessments`,
         payload,
         {
           headers: {

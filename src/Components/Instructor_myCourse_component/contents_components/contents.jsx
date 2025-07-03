@@ -129,7 +129,7 @@ const Contents = () => {
       }
 
       const response = await axios.get(
-        `https://lms-backend-flwq.onrender.com/api/v1/courses/${courseId}`,
+        `https://new-lms-backend-vmgr.onrender.com/api/v1/courses/${courseId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -198,7 +198,7 @@ const Contents = () => {
         lectures: [],
       };
       await axios.put(
-        `https://lms-backend-flwq.onrender.com/api/v1/instructors/courses/${courseId}`,
+        `https://new-lms-backend-vmgr.onrender.com/api/v1/instructors/courses/${courseId}`,
         {
           curriculum: [
             ...units.map((unit) => ({
@@ -277,7 +277,7 @@ const Contents = () => {
               })),
       }));
       await axios.put(
-        `https://lms-backend-flwq.onrender.com/api/v1/instructors/courses/${courseId}`,
+        `https://new-lms-backend-vmgr.onrender.com/api/v1/instructors/courses/${courseId}`,
         { curriculum: updatedCurriculum },
         {
           headers: {
@@ -320,7 +320,7 @@ const Contents = () => {
           })),
         }));
       await axios.put(
-        `https://lms-backend-flwq.onrender.com/api/v1/instructors/courses/${courseId}`,
+        `https://new-lms-backend-vmgr.onrender.com/api/v1/instructors/courses/${courseId}`,
         { curriculum: updatedCurriculum },
         {
           headers: {
@@ -374,7 +374,7 @@ const Contents = () => {
               })),
       }));
       await axios.put(
-        `https://lms-backend-flwq.onrender.com/api/v1/instructors/courses/${courseId}`,
+        `https://new-lms-backend-vmgr.onrender.com/api/v1/instructors/courses/${courseId}`,
         { curriculum: updatedCurriculum },
         {
           headers: {
@@ -436,7 +436,7 @@ const Contents = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.put(
-        `https://lms-backend-flwq.onrender.com/api/v1/instructors/courses/${courseId}`,
+        `https://new-lms-backend-vmgr.onrender.com/api/v1/instructors/courses/${courseId}`,
         { title: newCourseTitle },
         {
           headers: {
@@ -466,7 +466,7 @@ const Contents = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.put(
-        `https://lms-backend-flwq.onrender.com/api/v1/instructors/courses/${courseId}`,
+        `https://new-lms-backend-vmgr.onrender.com/api/v1/instructors/courses/${courseId}`,
         { status: newStatus },
         {
           headers: {

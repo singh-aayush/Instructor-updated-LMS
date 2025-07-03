@@ -61,7 +61,7 @@ function Assignments() {
         }
 
         const response = await axios.get(
-          'https://lms-backend-flwq.onrender.com/api/v1/instructors/courses',
+          'https://new-lms-backend-vmgr.onrender.com/api/v1/instructors/courses',
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -107,7 +107,7 @@ function Assignments() {
         if (selectedCourseId === 'all') {
           for (const course of courses) {
             const response = await axios.get(
-              `https://lms-backend-flwq.onrender.com/api/v1/instructors/courses/${course._id}/assessments/submitted`,
+              `https://new-lms-backend-vmgr.onrender.com/api/v1/instructors/courses/${course._id}/assessments/submitted`,
               {
                 headers: {
                   Authorization: `Bearer ${token}`,
@@ -124,7 +124,7 @@ function Assignments() {
           }
         } else {
           const response = await axios.get(
-            `https://lms-backend-flwq.onrender.com/api/v1/instructors/courses/${selectedCourseId}/assessments/submitted`,
+            `https://new-lms-backend-vmgr.onrender.com/api/v1/instructors/courses/${selectedCourseId}/assessments/submitted`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -175,7 +175,7 @@ function Assignments() {
       }
 
       await axios.delete(
-        `https://lms-backend-flwq.onrender.com/api/v1/instructors/courses/${courseId}/assessments/${assessmentId}`,
+        `https://new-lms-backend-vmgr.onrender.com/api/v1/instructors/courses/${courseId}/assessments/${assessmentId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

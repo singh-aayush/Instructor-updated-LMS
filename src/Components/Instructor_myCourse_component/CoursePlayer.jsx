@@ -22,7 +22,7 @@ export default function CoursePlayer() {
       try {
         setIsLoading(true);
         const token = localStorage.getItem('token');
-        const courseRes = await axios.get(`https://lms-backend-flwq.onrender.com/api/v1/instructors/courses/${courseId}`, {
+        const courseRes = await axios.get(`https://new-lms-backend-vmgr.onrender.com/api/v1/instructors/courses/${courseId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 

@@ -20,7 +20,7 @@ export default function MyCourses() {
       try {
         const token = localStorage.getItem('token');
         const response = await axios.get(
-          'https://lms-backend-flwq.onrender.com/api/v1/instructors/courses',
+          'https://new-lms-backend-vmgr.onrender.com/api/v1/instructors/courses',
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -34,7 +34,7 @@ export default function MyCourses() {
           coursesData.map(async (course) => {
             try {
               const courseResponse = await axios.get(
-                `https://lms-backend-flwq.onrender.com/api/v1/instructors/courses/${course._id}`,
+                `https://new-lms-backend-vmgr.onrender.com/api/v1/instructors/courses/${course._id}`,
                 {
                   headers: {
                     Authorization: `Bearer ${token}`,
@@ -83,7 +83,7 @@ export default function MyCourses() {
       const token = localStorage.getItem('token');
       const newStatus = currentStatus === 'published' ? 'draft' : 'published';
       await axios.put(
-        `https://lms-backend-flwq.onrender.com/api/v1/instructors/courses/${courseId}`,
+        `https://new-lms-backend-vmgr.onrender.com/api/v1/instructors/courses/${courseId}`,
         { status: newStatus },
         {
           headers: {
@@ -104,7 +104,7 @@ export default function MyCourses() {
       try {
         const token = localStorage.getItem('token');
         await axios.delete(
-          `https://lms-backend-flwq.onrender.com/api/v1/instructors/courses/${courseId}`,
+          `https://new-lms-backend-vmgr.onrender.com/api/v1/instructors/courses/${courseId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

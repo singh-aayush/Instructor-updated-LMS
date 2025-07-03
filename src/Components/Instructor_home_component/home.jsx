@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUsers, faBookOpen, faTasks, faChartLine, faPlusCircle, faChartBar, faSpinner, faEnvelope } from '@fortawesome/free-solid-svg-icons';
 import { ThemeContext } from '../../themeContext';
 
+
 const Dashboard = () => {
   const { theme } = useContext(ThemeContext);
   const [totalStudents, setTotalStudents] = useState(0);
@@ -53,7 +54,7 @@ const Dashboard = () => {
 
         // Fetch courses
         setLoadingCourses(true);
-        const coursesResponse = await axios.get('https://lms-backend-flwq.onrender.com/api/v1/instructors/courses');
+        const coursesResponse = await axios.get('https://new-lms-backend-vmgr.onrender.com/api/v1/instructors/courses');
         const fetchedCourses = coursesResponse.data.data || [];
         const publishedCourses = fetchedCourses.filter(course => course.status === 'published').length;
         let courseInc = 0;
@@ -90,9 +91,7 @@ const Dashboard = () => {
           const courseId = course._id;
           const courseTitle = course.title;
           try {
-            const studentsResponse = await axios.get(
-              `https://lms-backend-flwq.onrender.com/api/v1/instructors/courses/${courseId}/students`
-            );
+            const studentsResponse = await axios.get(`https://new-lms-backend-vmgr.onrender.com/api/v1/instructors/courses/${courseId}/students`);
             const courseStudents = studentsResponse.data.data || [];
 
             for (const enrollment of courseStudents) {
@@ -110,9 +109,7 @@ const Dashboard = () => {
 
                 // Fetch progress for each student in the course
                 try {
-                  const progressResponse = await axios.get(
-                    `https://lms-backend-flwq.onrender.com/api/v1/instructors/courses/${courseId}/students/${student._id}/progress`
-                  );
+                  const progressResponse = await axios.get(`https://new-lms-backend-vmgr.onrender.com/api/v1/instructors/courses/${courseId}/students/${student._id}/progress`);
                   const progressData = progressResponse.data.data;
                   if (progressData && progressData.overallProgress) {
                     totalProgress += progressData.overallProgress;
@@ -144,7 +141,7 @@ const Dashboard = () => {
 
         // Fetch earnings
         try {
-          const earningsResponse = await axios.get('https://lms-backend-flwq.onrender.com/api/v1/instructors/earnings');
+          const earningsResponse = await axios.get('https://new-lms-backend-vmgr.onrender.com/api/v1/instructors/earnings');
           let earnings = earningsResponse.data.data.totalEarnings;
           
           if (earnings === 0) {
@@ -165,11 +162,11 @@ const Dashboard = () => {
         }
 
       } catch (error) {
-        console.error('Error fetching data:', error, error.response, error.request);
+        console.error('Error fetching data:', error);
         if (error.response && error.response.status === 401) {
           setError('Unauthorized. Please log in again.');
         } else {
-          setError('Failed to fetch data. Please try again later.');
+          setError(`Failed to fetch data: ${error.response?.status} - ${error.response?.data?.message || error.message}`);
         }
         setLoadingCourses(false);
         setLoadingStudents(false);
@@ -177,7 +174,7 @@ const Dashboard = () => {
     };
 
     fetchData();
-  }, [totalStudents, activeCourses]);
+  }, []); // Removed totalStudents and activeCourses from dependencies to prevent unnecessary re-renders
 
   const handleOpenModal = () => {
     setShowModal(true);
@@ -243,7 +240,7 @@ const Dashboard = () => {
         }
 
         const payload = {
-          user: formData.userIds,
+          user: formData.userIds, // Changed to 'user' to match API format
           title: formData.title,
           message: formData.message,
           type: formData.type,
@@ -252,7 +249,7 @@ const Dashboard = () => {
           ...(formData.actionUrl && { actionUrl: formData.actionUrl }),
         };
 
-        await axios.post('https://lms-backend-flwq.onrender.com/api/v1/notifications', payload, {
+        await axios.post(`https://new-lms-backend-vmgr.onrender.com/api/v1/notifications`, payload, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -272,23 +269,19 @@ const Dashboard = () => {
           ...(formData.actionUrl && { actionUrl: formData.actionUrl }),
         };
 
-        await axios.post(
-          `https://lms-backend-flwq.onrender.com/api/v1/notifications/course/${formData.courseId}`,
-          payload,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-          }
-        );
+        await axios.post(`https://new-lms-backend-vmgr.onrender.com/api/v1/notifications/course/${formData.courseId}`, payload, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
       }
 
       setShowModal(false);
       alert('Notification sent successfully!');
     } catch (error) {
-      console.error('Error sending notification:', error, error.response, error.request);
-      setFormError(`Failed to send notification: ${error.response?.data?.message || error.message}`);
+      console.error('Error sending notification:', error);
+      setFormError(`Failed to send notification: ${error.response?.status} - ${error.response?.data?.message || error.message}`);
     } finally {
       setSending(false);
     }
@@ -361,7 +354,7 @@ const Dashboard = () => {
                     {courseIncrement > 0 ? `+${courseIncrement}%` : courseIncrement < 0 ? `${courseIncrement}%` : '0%'}
                   </div>
                 </div>
-                <h3 className={`text-xs sm:text-sm font-medium mb-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Active Courses</h3>
+                <h3 className={`text-xs sm:text-sm font-medium mb-2 ${theme === 'dark' ? 'bg-gray-800/30 border-gray-700/30' : 'bg-white/70 border-gray-200/50'}`}>Active Courses</h3>
                 <p className={`text-2xl sm:text-3xl font-bold ${theme === 'dark' ? 'text-emerald-400' : 'text-gray-800'}`}>{activeCourses}</p>
                 <div
                   className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-200 ${
@@ -424,7 +417,8 @@ const Dashboard = () => {
                     <FontAwesomeIcon icon={faChartLine} className={`text-lg sm:text-xl ${theme === 'dark' ? 'text-purple-400' : 'text-purple-600'}`} />
                   </div>
                   <div
-                    className={`text-xs px-2 py-1 rounded-lg ${theme === 'dark' ? 'bg-green-500/20 text-green-400' : 'bg-green-200 text-green-600'}`}
+                    className={`text-xs px-2 pyទ
+                    py-1 rounded-lg ${theme === 'dark' ? 'bg-green-500/20 text-green-400' : 'bg-green-200 text-green-600'}`}
                   >
                     {averageCompletion > 0 ? `+${averageCompletion}%` : '0%'}
                   </div>
@@ -451,9 +445,7 @@ const Dashboard = () => {
             <button
               onClick={() => navigate('/dashboard/create-course')}
               className={`p-3 sm:p-4 rounded-lg flex flex-col items-center text-center transition-all duration-300 hover:scale-105 shadow-md ${
-                theme === 'dark'
-                  ? 'bg-gray-700/30 hover:bg-gray-600/30 border border-gray-600/50'
-                  : 'bg-blue-50 hover:bg-blue-100 border border-blue-200'
+                theme === 'dark' ? 'bg-gray-800/30 border-gray-700/30' : 'bg-white/70 border-gray-200/50'
               }`}
             >
               <FontAwesomeIcon icon={faPlusCircle} className={`text-xl sm:text-2xl mb-2 ${theme === 'dark' ? 'text-blue-400' : 'text-blue-600'}`} />

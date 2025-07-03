@@ -71,7 +71,7 @@ const TopicEditor = ({ topic, updateTopic, lectureId, sectionId }) => {
       }
 
       const response = await axios.get(
-        `https://lms-backend-flwq.onrender.com/api/v1/courses/${courseId}`,
+        `https://new-lms-backend-vmgr.onrender.com/api/v1/courses/${courseId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -179,7 +179,7 @@ const TopicEditor = ({ topic, updateTopic, lectureId, sectionId }) => {
         });
 
         const contentResponse = await axios.post(
-          `https://lms-backend-flwq.onrender.com/api/v1/instructors/courses/${courseId}/content`,
+          `https://new-lms-backend-vmgr.onrender.com/api/v1/instructors/courses/${courseId}/content`,
           formData,
           {
             headers: {
@@ -190,7 +190,7 @@ const TopicEditor = ({ topic, updateTopic, lectureId, sectionId }) => {
         );
 
         const lectureResponse = await axios.get(
-          `https://lms-backend-flwq.onrender.com/api/v1/courses/${courseId}`,
+          `https://new-lms-backend-vmgr.onrender.com/api/v1/courses/${courseId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

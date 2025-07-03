@@ -86,7 +86,7 @@ function CreateCourse() {
       thumbnailFormData.append('thumbnail', thumbnail, thumbnail.name);
 
       const response = await axios.post(
-        `https://lms-backend-flwq.onrender.com/api/v1/instructors/courses/${courseId}/thumbnail`,
+        `https://new-lms-backend-vmgr.onrender.com/api/v1/instructors/courses/${courseId}/thumbnail`,
         thumbnailFormData,
         {
           headers: {
@@ -127,7 +127,7 @@ function CreateCourse() {
       }
 
       const response = await axios.post(
-        'https://lms-backend-flwq.onrender.com/api/v1/instructors/courses',
+        'https://new-lms-backend-vmgr.onrender.com/api/v1/instructors/courses',
         courseData,
         {
           headers: {

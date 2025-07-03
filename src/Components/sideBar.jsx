@@ -84,7 +84,7 @@ export default function Sidebar({ onLinkClick, setSidebarExpanded, setActiveSect
         }
 
         const response = await axios.get(
-          'https://lms-backend-flwq.onrender.com/api/v1/instructors/profile',
+          'https://new-lms-backend-vmgr.onrender.com/api/v1/instructors/profile',
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -121,7 +121,7 @@ export default function Sidebar({ onLinkClick, setSidebarExpanded, setActiveSect
   const handleLogout = async () => {
     try {
       const token = localStorage.getItem('token');
-      await axios.get('https://lms-backend-flwq.onrender.com/api/v1/auth/logout', {
+      await axios.get('https://new-lms-backend-vmgr.onrender.com/api/v1/auth/logout', {
         headers: {
           Authorization: `Bearer ${token}`,
         },

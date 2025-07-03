@@ -69,7 +69,7 @@ const Analytics = () => {
       try {
         const token = localStorage.getItem('token');
         if (!token) throw new Error('No authentication token found');
-        const response = await axios.get('https://lms-backend-flwq.onrender.com/api/v1/instructors/earnings', {
+        const response = await axios.get('https://new-lms-backend-vmgr.onrender.com/api/v1/instructors/earnings', {
           headers: { Authorization: `Bearer ${token}` },
           params: { period: analyticsTimePeriod },
         });
@@ -93,7 +93,7 @@ const Analytics = () => {
       try {
         const token = localStorage.getItem('token');
         if (!token) throw new Error('No authentication token found');
-        const response = await axios.get('https://lms-backend-flwq.onrender.com/api/v1/instructors/courses', {
+        const response = await axios.get('https://new-lms-backend-vmgr.onrender.com/api/v1/instructors/courses', {
           headers: { Authorization: `Bearer ${token}` },
           params: { period: analyticsTimePeriod },
         });

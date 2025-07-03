@@ -29,7 +29,7 @@ const AccountTab = () => {
           throw new Error('No authentication token found');
         }
 
-        const response = await axios.get('https://lms-backend-flwq.onrender.com/api/v1/instructors/profile', {
+        const response = await axios.get('https://new-lms-backend-vmgr.onrender.com/api/v1/instructors/profile', {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -80,7 +80,7 @@ const AccountTab = () => {
       };
 
       const accountResponse = await axios.put(
-        'https://lms-backend-flwq.onrender.com/api/v1/auth/updatedetails',
+        'https://new-lms-backend-vmgr.onrender.com/api/v1/auth/updatedetails',
         accountUpdateData,
         {
           headers: {
@@ -102,7 +102,7 @@ const AccountTab = () => {
         };
 
         const passwordResponse = await axios.put(
-          'https://lms-backend-flwq.onrender.com/api/v1/auth/changepassword',
+          'https://new-lms-backend-vmgr.onrender.com/api/v1/auth/changepassword',
           passwordUpdateData,
           {
             headers: {

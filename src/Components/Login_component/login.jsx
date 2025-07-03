@@ -62,7 +62,7 @@ const Login = () => {
 
     try {
       const res = await axios.post(
-        'https://lms-backend-flwq.onrender.com/api/v1/auth/login',
+        'https://new-lms-backend-vmgr.onrender.com/api/v1/auth/login',
         formData
       );
 
