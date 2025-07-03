@@ -509,7 +509,7 @@ const Dashboard = () => {
             }`}
           >
             <div
-              className={`p-6 rounded-lg shadow-lg max-w-3xl p-[10px] md:p-0 w-full max-h-[80vh] overflow-y-auto ${
+              className={`p-6 rounded-lg shadow-lg max-w-3xl p-[10px] md:p-4 w-full max-h-[80vh] overflow-y-auto ${
                 theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'
               }`}
             >

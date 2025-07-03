@@ -2,14 +2,15 @@ import React, { useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import { useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSun, faMoon, faUser, faVideo } from '@fortawesome/free-solid-svg-icons';
+import { faSun, faMoon, faUser, faVideo, faBars, faChevronDown } from '@fortawesome/free-solid-svg-icons';
 import { ThemeContext } from '../themeContext';
 
-const Navbar = ({ profileInitial = 'A' }) => {
+const Navbar = ({ profileInitial = 'A', toggleSidebar }) => {
   const { theme, setTheme } = useContext(ThemeContext);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isGoLiveOpen, setIsGoLiveOpen] = useState(false);
   const [isJoinClassOpen, setIsJoinClassOpen] = useState(false);
+  const [isMobileDropdownOpen, setIsMobileDropdownOpen] = useState(false);
   const [courses, setCourses] = useState([]);
   const [liveClasses, setLiveClasses] = useState([]);
   const [selectedCourseId, setSelectedCourseId] = useState('');
@@ -23,7 +24,7 @@ const Navbar = ({ profileInitial = 'A' }) => {
     duration: ''
   });
   const [tempDateTime, setTempDateTime] = useState('');
-  const [isJoining, setIsJoining] = useState(new Set()); // Use a Set to track joining live classes
+  const [isJoining, setIsJoining] = useState(new Set());
 
   const location = useLocation();
 
@@ -64,6 +65,10 @@ const Navbar = ({ profileInitial = 'A' }) => {
 
   const toggleProfile = () => {
     setIsProfileOpen(!isProfileOpen);
+  };
+
+  const toggleMobileDropdown = () => {
+    setIsMobileDropdownOpen(!isMobileDropdownOpen);
   };
 
   const fetchCourses = async () => {
@@ -111,15 +116,17 @@ const Navbar = ({ profileInitial = 'A' }) => {
   const handleGoLiveClick = () => {
     fetchCourses();
     setIsGoLiveOpen(true);
+    setIsMobileDropdownOpen(false);
   };
 
   const handleJoinClassClick = () => {
     fetchCourses();
     setIsJoinClassOpen(true);
+    setIsMobileDropdownOpen(false);
   };
 
   const handleJoinLiveClass = async (liveClassId) => {
-    setIsJoining((prev) => new Set(prev).add(liveClassId)); // Add liveClassId to Set
+    setIsJoining((prev) => new Set(prev).add(liveClassId));
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -135,17 +142,14 @@ const Navbar = ({ profileInitial = 'A' }) => {
         }
       );
 
-      // Validate API response
       if (!response.data.success || !response.data.data.url) {
         throw new Error(response.data.message || 'Invalid response from server');
       }
 
-      // Attempt to open the URL
       const joinWindow = window.open(response.data.data.url, '_blank');
       if (!joinWindow) {
         alert('Popup blocked. Please allow popups for this site or click this link manually: ' + response.data.data.url);
       } else {
-        // Close the popup after successfully opening the URL
         setIsJoinClassOpen(false);
         setSelectedCourseId('');
         setLiveClasses([]);
@@ -168,7 +172,7 @@ const Navbar = ({ profileInitial = 'A' }) => {
     } finally {
       setIsJoining((prev) => {
         const newSet = new Set(prev);
-        newSet.delete(liveClassId); // Remove liveClassId from Set
+        newSet.delete(liveClassId);
         return newSet;
       });
     }
@@ -217,21 +221,33 @@ const Navbar = ({ profileInitial = 'A' }) => {
 
   return (
     <header
-      className={`p-6 md:mr-4 shadow-lg border-b backdrop-blur-xl transition-all z-[2000] fixed w-[-webkit-fill-available] top-0 ${
+      className={`p-4 sm:p-6 md:mr-4 shadow-lg border-b backdrop-blur-xl transition-all z-[2000] fixed w-[-webkit-fill-available] top-0 ${
         theme === 'dark' ? 'bg-black/20 border-white/10' : 'bg-white/70 border-black/10'
       }`}
     >
       <div className="mx-auto flex items-center justify-between">
-        <div className="flex-1 min-w-0 pl-8">
+        {/* Menu Button for Sidebar (Mobile Only) */}
+        <button
+          onClick={toggleSidebar}
+          className={`sm:hidden p-2 rounded-lg transition-all duration-300 ${
+            theme === 'dark' ? 'bg-gray-800/20 hover:bg-gray-800/30 text-gray-300' : 'bg-gray-50 hover:bg-gray-100 text-gray-700'
+          }`}
+          aria-label="Toggle sidebar"
+        >
+          <FontAwesomeIcon icon={faBars} className="text-base" />
+        </button>
+
+        {/* Heading */}
+        <div className="flex-1 min-w-0 pl-4 sm:pl-8">
           <h1
-            className={`!text-[1.5rem] md:text-10 font-bold truncate ${
+            className={`!text-[1.25rem] sm:text-[1.5rem] md:text-2xl font-bold truncate ${
               theme === 'dark' ? 'text-white' : 'text-gray-800'
             }`}
           >
             {title}
           </h1>
           <p
-            className={`text-[12px] md:text-sm mt-1 truncate ${
+            className={`text-[10px] sm:text-[12px] md:text-sm mt-1 truncate ${
               theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
             }`}
           >
@@ -239,8 +255,10 @@ const Navbar = ({ profileInitial = 'A' }) => {
           </p>
         </div>
 
+        {/* Right Section */}
         <div className="flex items-center space-x-2 sm:space-x-3">
-          <div className="flex items-center space-x-2 sm:space-x-3">
+          {/* Buttons for Tablet and Larger Screens */}
+          <div className="hidden sm:flex items-center space-x-2 sm:space-x-3">
             <button
               onClick={toggleTheme}
               className={`flex-1 p-2 rounded-lg text-normal md:text-medium transition-all duration-300 ${
@@ -270,32 +288,102 @@ const Navbar = ({ profileInitial = 'A' }) => {
               <FontAwesomeIcon icon={faVideo} className="text-sm mr-2" />
               Join Class
             </button>
-
-            <div
-              className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl transition-all duration-300 hover:scale-105 ${
-                theme === 'dark' ? 'bg-white/10 hover:bg-white/20' : 'bg-black/5 hover:bg-black/10'
-              }`}
-              onClick={toggleProfile}
-            >
-              <div
-                className={`w-6 sm:w-8 h-6 sm:h-8 flex items-center justify-center rounded-full font-medium uppercase text-xs sm:text-sm ${
-                  theme === 'dark' ? 'bg-gray-700 text-white' : 'bg-purple-100 text-purple-800'
-                }`}
-              >
-                {profileInitial}
-              </div>
-              <span
-                className={`text-xs sm:text-sm font-medium ${
-                  theme === 'dark' ? 'text-white' : 'text-gray-800'
-                }`}
-              >
-                {profileInitial}
-              </span>
-            </div>
           </div>
+
+          {/* Profile Section */}
+          <div className="relative">
+  <div
+    className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl transition-all duration-300 hover:scale-105 cursor-pointer ${
+      theme === 'dark' ? 'bg-white/10 hover:bg-white/20' : 'bg-black/5 hover:bg-black/10'
+    }`}
+    onClick={() => {
+      toggleProfile();
+      setIsMobileDropdownOpen(false);
+    }}
+  >
+    <div
+      className={`w-6 sm:w-8 h-6 sm:h-8 flex items-center justify-center rounded-full font-medium uppercase text-xs sm:text-sm ${
+        theme === 'dark' ? 'bg-gray-700 text-white' : 'bg-purple-100 text-purple-800'
+      }`}
+    >
+      {profileInitial}
+    </div>
+    <span
+      className={`text-xs sm:text-sm font-medium ${
+        theme === 'dark' ? 'text-white' : 'text-gray-800'
+      }`}
+    >
+      {profileInitial}
+    </span>
+
+    {/* 👇 Arrow visible on mobile only */}
+    <div
+      className="sm:hidden"
+      onClick={(e) => {
+        e.stopPropagation();
+        toggleMobileDropdown();
+      }}
+    >
+      <FontAwesomeIcon
+        icon={faChevronDown}
+        className={`text-xs transition-transform duration-300 ${
+          isMobileDropdownOpen ? 'rotate-180' : ''
+        } ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}
+      />
+    </div>
+  </div>
+
+  {/* Mobile Dropdown */}
+  {isMobileDropdownOpen && (
+    <div
+      className={`sm:hidden absolute top-full right-0 mt-2 w-48 rounded-lg shadow-lg z-[5100] ${
+        theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-gray-800'
+      }`}
+    >
+      <div className="flex flex-col p-2 gap-[5px]">
+        <button
+          onClick={toggleTheme}
+          className={`w-full text-left p-2 rounded-lg text-sm transition-all duration-300 ${
+            theme === 'dark'
+              ? 'bg-blue-500/20 hover:bg-blue-500/30 text-blue-400'
+              : 'bg-blue-50 hover:bg-blue-100 text-blue-700'
+          }`}
+        >
+          <FontAwesomeIcon icon={theme === 'dark' ? faSun : faMoon} className="text-sm mr-2" />
+          {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+        </button>
+
+        <button
+          onClick={handleGoLiveClick}
+          className={`w-full text-left p-2 rounded-lg text-sm transition-all duration-300 ${
+            theme === 'dark'
+              ? 'bg-green-500/20 hover:bg-green-500/30 text-green-400'
+              : 'bg-green-50 hover:bg-green-100 text-green-700'
+          }`}
+        >
+          <FontAwesomeIcon icon={faVideo} className="text-sm mr-2" />
+          Go Live
+        </button>
+
+        <button
+          onClick={handleJoinClassClick}
+          className={`w-full text-left p-2 rounded-lg text-sm transition-all duration-300 ${
+            theme === 'dark'
+              ? 'bg-blue-500/20 hover:bg-blue-500/30 text-blue-400'
+              : 'bg-blue-50 hover:bg-blue-100 text-blue-700'
+          }`}
+        >
+          <FontAwesomeIcon icon={faVideo} className="text-sm mr-2" />
+          Join Class
+        </button>
+      </div>
+    </div>
+  )}
+</div>
         </div>
       </div>
 
+      {/* Go Live Modal */}
       {isGoLiveOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-lg z-[5000] flex items-center justify-center">
           <div
@@ -307,7 +395,7 @@ const Navbar = ({ profileInitial = 'A' }) => {
             <form onSubmit={handleGoLiveSubmit} className="space-y-4">
               <select
                 className={`w-full p-2 rounded border text-sm sm:text-base ${
-                  theme === 'dark' ? 'bg-gray-800 protected from spambots, you need to enable Javascript to see it border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-800'
+                  theme === 'dark' ? 'bg-gray-800 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-800'
                 }`}
                 value={formData.courseId}
                 required
@@ -408,6 +496,7 @@ const Navbar = ({ profileInitial = 'A' }) => {
         </div>
       )}
 
+      {/* Join Class Modal */}
       {isJoinClassOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-lg z-[5000] flex items-center justify-center">
           <div
@@ -483,7 +572,7 @@ const Navbar = ({ profileInitial = 'A' }) => {
                           </p>
                           <button
                             onClick={() => handleJoinLiveClass(liveClass._id)}
-                            disabled={isJoining.has(liveClass._id)} // Check if this specific liveClass is joining
+                            disabled={isJoining.has(liveClass._id)}
                             className={`flex-1 p-2 rounded-lg text-normal md:text-medium transition-all duration-300 ${
                               theme === 'dark'
                                 ? 'bg-blue-500/20 hover:bg-blue-500/30 text-blue-400'
@@ -541,7 +630,7 @@ const Navbar = ({ profileInitial = 'A' }) => {
                     setIsJoinClassOpen(false);
                     setSelectedCourseId('');
                     setLiveClasses([]);
-                    setIsJoining(new Set()); // Reset joining state
+                    setIsJoining(new Set());
                   }}
                   className={`flex-1 p-2 rounded-lg text-normal md:text-medium transition-all duration-300 ${
                     theme === 'dark' ? 'bg-gray-800/20 hover:bg-gray-800/30 text-gray-300' : 'bg-gray-50 hover:bg-gray-100 text-gray-700'
